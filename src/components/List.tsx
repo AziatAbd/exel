@@ -40,6 +40,7 @@ const List = ({
               ...rest,
             };
           }
+          return item;
         });
       })
       .flat();

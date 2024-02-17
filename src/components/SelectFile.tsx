@@ -15,11 +15,8 @@ const SelectFile = () => {
   const [list, setList] = useState<ListType[]>([]);
   const [listRows, setListRows] = useState<ListRow[]>([]);
   const [mergedData, setMergedData] = useState<DataItem[]>([]);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   useEffect(() => {
-    let isButtonEnabled = false;
-
     if (firstFile.length > 0 && secondFile.length > 0) {
       const mergedData = [];
       for (let i = 0; i < firstFile.length; i++) {
@@ -31,15 +28,13 @@ const SelectFile = () => {
             dataFromSecondFile[secondSelectedOption]
           ) {
             mergedData.push({ ...dataFromFirstFile, ...dataFromSecondFile });
-            isButtonEnabled = true;
             break;
           }
         }
       }
       setMergedData(mergedData);
     }
-    setIsButtonDisabled(!isButtonEnabled);
-  }, [firstSelectedOption, secondSelectedOption, firstFile, secondFile]);
+  }, [firstFile, secondFile, firstSelectedOption, secondSelectedOption]);
 
   const handleFileUpload = (
     e: ChangeEvent<HTMLInputElement>,
@@ -106,6 +101,8 @@ const SelectFile = () => {
     setListRows((prev) => [...prev, newRow]);
   };
 
+  const btnDisabled = firstSelectedOption === "" || secondSelectedOption === "";
+
   return (
     <div className="p-10">
       <div className="flex gap-20 mb-10">
@@ -128,9 +125,7 @@ const SelectFile = () => {
             value={firstSelectedOption}
             onChange={(e) => setFirstSelectedOption(e.target.value)}
           >
-            <option disabled>
-              Select...
-            </option>
+            <option value="">Select...</option>
             {firstFileColumn.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -157,9 +152,7 @@ const SelectFile = () => {
             value={secondSelectedOption}
             onChange={(e) => setSecondSelectedOption(e.target.value)}
           >
-            <option disabled>
-              Select...
-            </option>
+            <option value="">Select...</option>
             {secondFileColumn.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -173,7 +166,7 @@ const SelectFile = () => {
           <button
             className="p-2 px-4 border-2 border-purple-500 rounded-md float-end disabled:border-gray-300"
             onClick={handleAddList}
-            disabled={isButtonDisabled}
+            disabled={btnDisabled}
           >
             +
           </button>
