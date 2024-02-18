@@ -21,32 +21,38 @@ const List = ({
 }: Props) => {
   const handleSaveAsExcel = () => {
     const updatedMergedData = listRows
-      .map((row) => {
-        const {
+      .map(
+        ({
+          additionalText,
           selectedColumns,
           selectedTypes,
-          additionalText,
           targetColumnNames,
-        } = row;
-        return mergedData.map((item) => {
-          if (selectedColumns in item) {
-            const { [selectedColumns]: value, ...rest } = item;
+        }) => {
+          return mergedData.map((item) => {
+            if (selectedColumns in item) {
+              const { [selectedColumns]: val } = item;
 
-            return {
-              [targetColumnNames]:
-                selectedTypes === "Formel"
-                  ? +value + +additionalText
-                  : `${value} ${additionalText}`,
-              ...rest,
-            };
-          }
-          return item;
-        });
-      })
+              return {
+                [targetColumnNames]:
+                  selectedTypes === "Formel"
+                    ? typeof val === "number"
+                      ? +val + +additionalText
+                      : +additionalText
+                    : `${val} ${additionalText}`,
+              };
+            }
+          });
+        }
+      )
       .flat();
 
+    let mergedObject = {};
+    for (const obj of updatedMergedData) {
+      mergedObject = { ...mergedObject, ...obj };
+    }
+
     const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(updatedMergedData);
+    const worksheet = XLSX.utils.json_to_sheet([mergedObject]);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
 
     XLSX.writeFile(workbook, "updated_data.xlsx");

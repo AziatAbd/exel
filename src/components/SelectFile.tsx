@@ -8,33 +8,49 @@ const SelectFile = () => {
   const [firstFileName, setFirstFileName] = useState<string>("");
   const [firstFileColumn, setFirstFileColumn] = useState<string[]>([]);
   const [firstSelectedOption, setFirstSelectedOption] = useState<string>("");
+
   const [secondFile, setSecondFile] = useState<DataItem[]>([]);
   const [secondFileName, setSecondFileName] = useState<string>("");
   const [secondFileColumn, setSecondFileColumn] = useState<string[]>([]);
   const [secondSelectedOption, setSecondSelectedOption] = useState<string>("");
+
   const [list, setList] = useState<ListType[]>([]);
   const [listRows, setListRows] = useState<ListRow[]>([]);
   const [mergedData, setMergedData] = useState<DataItem[]>([]);
+  const [buttonDisabled, setButtonDisabled] = useState(true);
 
   useEffect(() => {
     if (firstFile.length > 0 && secondFile.length > 0) {
-      const mergedData = [];
+      let areOptionsEqual = false;
       for (let i = 0; i < firstFile.length; i++) {
         const dataFromFirstFile = firstFile[i];
         for (let j = 0; j < secondFile.length; j++) {
           const dataFromSecondFile = secondFile[j];
+
           if (
             dataFromFirstFile[firstSelectedOption] ===
             dataFromSecondFile[secondSelectedOption]
           ) {
+            setButtonDisabled(false);
+            areOptionsEqual = true;
             mergedData.push({ ...dataFromFirstFile, ...dataFromSecondFile });
             break;
           }
         }
+        if (areOptionsEqual) {
+          break;
+        }
       }
       setMergedData(mergedData);
+      setButtonDisabled(!areOptionsEqual);
     }
-  }, [firstFile, secondFile, firstSelectedOption, secondSelectedOption]);
+  }, [
+    firstFile,
+    secondFile,
+    firstSelectedOption,
+    secondSelectedOption,
+    mergedData,
+  ]);
 
   const handleFileUpload = (
     e: ChangeEvent<HTMLInputElement>,
@@ -101,8 +117,6 @@ const SelectFile = () => {
     setListRows((prev) => [...prev, newRow]);
   };
 
-  const btnDisabled = firstSelectedOption === "" || secondSelectedOption === "";
-
   return (
     <div className="p-10">
       <div className="flex gap-20 mb-10">
@@ -125,7 +139,9 @@ const SelectFile = () => {
             value={firstSelectedOption}
             onChange={(e) => setFirstSelectedOption(e.target.value)}
           >
-            <option value="">Select...</option>
+            <option value="" disabled>
+              Select...
+            </option>
             {firstFileColumn.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -152,7 +168,9 @@ const SelectFile = () => {
             value={secondSelectedOption}
             onChange={(e) => setSecondSelectedOption(e.target.value)}
           >
-            <option value="">Select...</option>
+            <option value="" disabled>
+              Select...
+            </option>
             {secondFileColumn.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -161,15 +179,23 @@ const SelectFile = () => {
           </select>
         </div>
       </div>
-      {firstFile.length > 0 && secondFile.length > 0 ? (
+      {firstFile.length > 0 &&
+      secondFile.length > 0 &&
+      firstSelectedOption !== "" &&
+      secondSelectedOption !== "" ? (
         <>
           <button
             className="p-2 px-4 border-2 border-purple-500 rounded-md float-end disabled:border-gray-300"
             onClick={handleAddList}
-            disabled={btnDisabled}
+            disabled={buttonDisabled}
           >
             +
           </button>
+          {buttonDisabled ? (
+            <p className="text-center font-bold text-lg text-red-600">
+              The column values are not similar
+            </p>
+          ) : null}
           <List
             lists={list}
             firstColumns={firstFileColumn}
@@ -181,7 +207,7 @@ const SelectFile = () => {
         </>
       ) : (
         <h2 className="text-center font-bold text-lg text-red-600">
-          Please select files
+          Please select the files{" "}
         </h2>
       )}
     </div>
